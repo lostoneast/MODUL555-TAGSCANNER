@@ -1,0 +1,46 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+.vscode/
+.idea/
+*.code-workspace
+
+# Local build artifacts
+.apriltag-dual-build/
+*.log
+
+# Generated vendor artifacts
+vendor-dual/
+
+# Python cache / local tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Node / package-manager caches (если когда-нибудь появятся)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Temporary / local files
+*.local
+.env
+.env.*
+.local/
+coverage/
+
+# Keep source files tracked, but ignore compiled outputs
+*.wasm
+*.js.map
+
+# Optional: ignore local generated docs or build output if added later
+/dist/
+/build/

@@ -1,6 +1,9 @@
 import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
 import { APP_CONFIG } from './config.js';
 
+const OBJECT_FAMILY = 'tag36h11';
+const ITEM_FAMILY = 'tagCustom48h12';
+
 export class AprilTagScanner {
   constructor(videoElement, overlayElement, onDetected) {
     this.video = videoElement;
@@ -19,52 +22,46 @@ export class AprilTagScanner {
     this.running = false;
     this.processing = false;
     this.timerId = null;
-
-    this.lastAcceptedTagId = null;
-    this.lastAcceptedAt = 0;
   }
 
   async init() {
-  const Comlink = await import(
-    "https://unpkg.com/comlink/dist/esm/comlink.mjs"
-  );
+    const Comlink = await import(
+      'https://unpkg.com/comlink/dist/esm/comlink.mjs'
+    );
 
-  this.worker = new Worker(
-    new URL('../vendor/apriltag.js', import.meta.url),
-    { type: 'classic' }
-  );
+    this.worker = new Worker(
+      new URL('../vendor-dual/apriltag.js', import.meta.url),
+      { type: 'classic' }
+    );
 
-  const Apriltag = Comlink.wrap(this.worker);
+    const Apriltag = Comlink.wrap(this.worker);
+    let resolveReady;
 
-  let resolveReady;
+    const readyPromise = new Promise((resolve) => {
+      resolveReady = resolve;
+    });
 
-  const readyPromise = new Promise((resolve) => {
-    resolveReady = resolve;
-  });
+    this.detector = await new Apriltag(
+      Comlink.proxy(() => {
+        resolveReady();
+      })
+    );
 
-  this.detector = await new Apriltag(
-    Comlink.proxy(() => {
-      resolveReady();
-    })
-  );
+    await readyPromise;
 
-  await readyPromise;
-
-  await this.detector.set_max_detections(1);
-  await this.detector.set_return_pose(0);
-  await this.detector.set_return_solutions(0);
-}
+    await this.detector.set_max_detections(4);
+    await this.detector.set_return_pose(0);
+    await this.detector.set_return_solutions(0);
+  }
 
   start() {
     if (this.running) return;
-
     this.running = true;
     this.scheduleNext(0);
   }
 
   stop() {
     this.running = false;
-
     if (this.timerId !== null) {
       window.clearTimeout(this.timerId);
       this.timerId = null;
@@ -101,24 +98,14 @@ export class AprilTagScanner {
 
     try {
       const detections = await this.detectFrame();
-      this.drawDetections(detections);
+      const pair = this.findPair(detections);
 
-      if (detections.length > 0) {
-        const detection = detections[0];
-        const now = Date.now();
+      this.drawDetections(detections, pair);
 
-        const isImmediateDuplicate =
-          String(detection.id) === String(this.lastAcceptedTagId) &&
-          now - this.lastAcceptedAt < APP_CONFIG.duplicateCooldownMs;
-
-        if (!isImmediateDuplicate) {
-          this.lastAcceptedTagId = detection.id;
-          this.lastAcceptedAt = now;
-
-          this.stop();
-          this.onDetected(detection);
-          return;
-        }
+      if (pair) {
+        this.stop();
+        this.onDetected(pair);
+        return;
       }
     } catch (error) {
       console.error('Ошибка распознавания AprilTag:', error);
@@ -132,7 +119,6 @@ export class AprilTagScanner {
   async detectFrame() {
     const sourceWidth = this.video.videoWidth;
     const sourceHeight = this.video.videoHeight;
-
     const width = Math.min(APP_CONFIG.processingWidth, sourceWidth);
     const height = Math.round(width * (sourceHeight / sourceWidth));
 
@@ -184,25 +170,107 @@ export class AprilTagScanner {
     return Array.isArray(result) ? result : [];
   }
 
-  drawDetections(detections) {
+  findPair(detections) {
+    const objectTags = detections.filter(
+      (detection) => detection.family === OBJECT_FAMILY
+    );
+    const itemTags = detections.filter(
+      (detection) => detection.family === ITEM_FAMILY
+    );
+
+    if (objectTags.length === 0 || itemTags.length === 0) {
+      return null;
+    }
+
+    let bestPair = null;
+    let bestDistanceSquared = Number.POSITIVE_INFINITY;
+
+    for (const objectTag of objectTags) {
+      const objectCenter = this.getDetectionCenter(objectTag);
+      if (!objectCenter) continue;
+
+      for (const itemTag of itemTags) {
+        const itemCenter = this.getDetectionCenter(itemTag);
+        if (!itemCenter) continue;
+
+        const dx = objectCenter.x - itemCenter.x;
+        const dy = objectCenter.y - itemCenter.y;
+        const distanceSquared = dx * dx + dy * dy;
+
+        if (distanceSquared < bestDistanceSquared) {
+          bestDistanceSquared = distanceSquared;
+          bestPair = { objectTag, itemTag };
+        }
+      }
+    }
+
+    return bestPair;
+  }
+
+  getDetectionCenter(detection) {
+    if (
+      detection?.center &&
+      Number.isFinite(detection.center.x) &&
+      Number.isFinite(detection.center.y)
+    ) {
+      return detection.center;
+    }
+
+    if (!Array.isArray(detection?.corners) || detection.corners.length < 4) {
+      return null;
+    }
+
+    const sum = detection.corners.reduce(
+      (acc, corner) => ({
+        x: acc.x + Number(corner.x),
+        y: acc.y + Number(corner.y)
+      }),
+      { x: 0, y: 0 }
+    );
+
+    return {
+      x: sum.x / detection.corners.length,
+      y: sum.y / detection.corners.length
+    };
+  }
+
+  drawDetections(detections, pair) {
     this.clearOverlay();
 
+    const pairedDetections = pair
+      ? new Set([pair.objectTag, pair.itemTag])
+      : new Set();
+
     for (const detection of detections) {
-      const corners = detection.corners;
+      const isPaired = pairedDetections.has(detection);
 
-      if (!Array.isArray(corners) || corners.length < 4) {
-        continue;
+      if (isPaired) {
+        this.drawTagContour(detection, '#22c55e', '#ffffff', false);
+      } else {
+        this.drawTagContour(detection, '#2563eb', '#ffffff', true);
       }
+    }
 
-      const ctx = this.overlayContext;
+    if (pair) {
+      this.drawPairRectangle(pair);
+    }
+  }
 
-      ctx.save();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#22c55e';
-      ctx.fillStyle = '#22c55e';
-      ctx.shadowColor = 'rgba(0,0,0,.45)';
-      ctx.shadowBlur = 4;
+  drawTagContour(detection, strokeColor, textColor, doubleStroke) {
+    const corners = detection.corners;
 
+    if (!Array.isArray(corners) || corners.length < 4) {
+      return;
+    }
+
+    const ctx = this.overlayContext;
+
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowBlur = 4;
+
+    const tracePath = () => {
       ctx.beginPath();
       ctx.moveTo(corners[0].x, corners[0].y);
 
@@ -211,21 +279,90 @@ export class AprilTagScanner {
       }
 
       ctx.closePath();
+    };
+
+    if (doubleStroke) {
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = strokeColor;
+      tracePath();
       ctx.stroke();
 
-      if (detection.center) {
-        ctx.font = '800 22px system-ui, sans-serif';
-        ctx.textAlign = 'center';
-
-        ctx.fillText(
-          `ID ${detection.id}`,
-          detection.center.x,
-          Math.max(26, detection.center.y - 14)
-        );
-      }
-
-      ctx.restore();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#ffffff';
+      tracePath();
+      ctx.stroke();
+    } else {
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = strokeColor;
+      tracePath();
+      ctx.stroke();
     }
+
+    const center = this.getDetectionCenter(detection);
+
+    if (center) {
+      ctx.font = '800 20px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillStyle = textColor;
+      ctx.strokeStyle = 'rgba(0,0,0,.75)';
+      ctx.lineWidth = 4;
+
+      const label = `${detection.family} · ID ${detection.id}`;
+      const y = Math.max(24, center.y - 12);
+
+      ctx.strokeText(label, center.x, y);
+      ctx.fillText(label, center.x, y);
+    }
+
+    ctx.restore();
+  }
+
+  drawPairRectangle(pair) {
+    const allCorners = [
+      ...(pair.objectTag.corners || []),
+      ...(pair.itemTag.corners || [])
+    ];
+
+    if (allCorners.length < 8) {
+      return;
+    }
+
+    const xs = allCorners.map((corner) => Number(corner.x));
+    const ys = allCorners.map((corner) => Number(corner.y));
+
+    const padding = 10;
+    const left = Math.max(2, Math.min(...xs) - padding);
+    const top = Math.max(2, Math.min(...ys) - padding);
+    const right = Math.min(this.overlay.width - 2, Math.max(...xs) + padding);
+    const bottom = Math.min(this.overlay.height - 2, Math.max(...ys) + padding);
+
+    const ctx = this.overlayContext;
+
+    ctx.save();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = '#22c55e';
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowBlur = 4;
+    ctx.strokeRect(left, top, right - left, bottom - top);
+
+    ctx.font = '800 20px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = 'rgba(0,0,0,.75)';
+    ctx.lineWidth = 4;
+
+    const label =
+      `ОБЪЕКТ ${pair.objectTag.id} · ИЗДЕЛИЕ ${pair.itemTag.id}`;
+
+    const labelX = left + 4;
+    const labelY = Math.max(22, top - 6);
+
+    ctx.strokeText(label, labelX, labelY);
+    ctx.fillText(label, labelX, labelY);
+
+    ctx.restore();
   }
 
   clearOverlay() {

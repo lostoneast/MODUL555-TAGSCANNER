@@ -1,8 +1,15 @@
 import { APP_CONFIG, STATUS_LABELS } from "./config.js";
 
-export function createTagEventPayload(tagId, status) {
-  if (!Number.isFinite(Number(tagId))) {
-    throw new Error("Некорректный ID AprilTag.");
+export function createTagEventPayload(pair, status) {
+  const objectTagId = Number(pair?.objectTagId);
+  const itemTagId = Number(pair?.itemTagId);
+
+  if (!Number.isFinite(objectTagId)) {
+    throw new Error("Некорректный ID метки объекта.");
+  }
+
+  if (!Number.isFinite(itemTagId)) {
+    throw new Error("Некорректный ID метки изделия.");
   }
 
   if (!STATUS_LABELS[status]) {
@@ -10,15 +17,16 @@ export function createTagEventPayload(tagId, status) {
   }
 
   return {
-    tagId: Number(tagId),
+    objectTagId,
+    itemTagId,
     status,
     timestamp: new Date().toISOString(),
     source: APP_CONFIG.source
   };
 }
 
-export async function sendTagStatus(tagId, status) {
-  const payload = createTagEventPayload(tagId, status);
+export async function sendTagStatus(pair, status) {
+  const payload = createTagEventPayload(pair, status);
 
   const mockRequest = {
     method: "POST",

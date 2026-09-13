@@ -9,7 +9,6 @@ const dom = {
   cameraView: document.getElementById("cameraView"),
   systemStatus: document.getElementById("systemStatus"),
   scanHint: document.getElementById("scanHint"),
-
   tagPanel: document.getElementById("tagPanel"),
   tagId: document.getElementById("tagId"),
   statusButtons: [...document.querySelectorAll(".status-button")],
@@ -18,13 +17,12 @@ const dom = {
   jsonPanel: document.getElementById("jsonPanel"),
   jsonOutput: document.getElementById("jsonOutput"),
   scanAgainButton: document.getElementById("scanAgainButton"),
-
   errorPanel: document.getElementById("errorPanel"),
   errorText: document.getElementById("errorText"),
   retryButton: document.getElementById("retryButton")
 };
 
-let currentTagId = null;
+let currentPair = null;
 let selectedStatus = null;
 let scannerInitialized = false;
 
@@ -74,11 +72,16 @@ async function init() {
   }
 }
 
-function handleTagDetected(detection) {
-  currentTagId = Number(detection.id);
+function handleTagDetected(pair) {
+  currentPair = {
+    objectTagId: Number(pair.objectTag.id),
+    itemTagId: Number(pair.itemTag.id)
+  };
+
   selectedStatus = null;
 
-  dom.tagId.textContent = String(currentTagId);
+  // Сохраняем прежний UI: показываем ID изделия.
+  dom.tagId.textContent = String(currentPair.itemTagId);
   dom.tagPanel.classList.remove("hidden");
   dom.jsonPanel.classList.add("hidden");
   dom.errorPanel.classList.add("hidden");
@@ -86,7 +89,9 @@ function handleTagDetected(detection) {
   clearStatusSelection();
   dom.submitButton.disabled = true;
 
-  dom.scanHint.textContent = `Метка ID ${currentTagId} обнаружена`;
+  dom.scanHint.textContent =
+    `Метка ID ${currentPair.itemTagId} обнаружена`;
+
   setSystemStatus("Метка найдена", "ready");
 
   if (navigator.vibrate) {
@@ -111,13 +116,13 @@ for (const button of dom.statusButtons) {
 }
 
 dom.submitButton.addEventListener("click", async () => {
-  if (currentTagId === null || !selectedStatus) return;
+  if (currentPair === null || !selectedStatus) return;
 
   dom.submitButton.disabled = true;
   dom.submitButton.textContent = "Формирование запроса…";
 
   try {
-    const result = await sendTagStatus(currentTagId, selectedStatus);
+    const result = await sendTagStatus(currentPair, selectedStatus);
 
     const displayData = {
       endpoint: result.request.url,
@@ -143,7 +148,7 @@ dom.submitButton.addEventListener("click", async () => {
 });
 
 dom.scanAgainButton.addEventListener("click", () => {
-  currentTagId = null;
+  currentPair = null;
   selectedStatus = null;
 
   dom.jsonOutput.textContent = "";
