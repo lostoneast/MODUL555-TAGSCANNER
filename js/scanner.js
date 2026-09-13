@@ -307,7 +307,7 @@ export class AprilTagScanner {
       ctx.fillStyle = textColor;
       ctx.strokeStyle = 'rgba(0,0,0,.75)';
       ctx.lineWidth = 4;
-      const prefix = detection.family === 'tag36h11' ? 'ОБЪЕКТ' : 'ИЗДЕЛИЕ';
+      const prefix = detection.family === 'tag36h11' ? 'Объект' : 'Изделие';
       if (detection.family) {}
       const label = `${prefix} · ID ${detection.id}`;
       const y = Math.max(24, center.y - 12);
