@@ -23,4 +23,4 @@ jobs:
           protocol: ftp
           port: 21
           local-dir: ./
-          server-dir: /www/scaner555.ru/
+          server-dir: /www/scan555.ru/
