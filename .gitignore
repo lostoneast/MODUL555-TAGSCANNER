@@ -35,9 +35,6 @@ yarn-error.log*
 .local/
 coverage/
 
-# Keep source files tracked, but ignore compiled outputs
-*.wasm
-*.js.map
 
 # Optional: ignore local generated docs or build output if added later
 /dist/
