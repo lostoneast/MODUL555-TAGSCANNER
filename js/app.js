@@ -48,7 +48,10 @@ async function init() {
     setSystemStatus("Камера…", "busy");
     dom.scanHint.textContent = "Запрос доступа к камере…";
 
-    await camera.start();
+    const cameraInfo = await camera.start();
+
+    dom.cameraView.style.aspectRatio =
+      `${cameraInfo.width} / ${cameraInfo.height}`;
 
     setSystemStatus("Сканирование", "ready");
     dom.scanHint.textContent = "Наведите камеру на AprilTag";
