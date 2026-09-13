@@ -1,0 +1,20 @@
+MODUL555 dual-family AprilTag WASM build
+
+Families:
+  tag36h11
+  tagCustom48h12
+
+Source:
+  https://github.com/arenaxr/apriltag-js-standalone.git
+  wrapper commit: f0fe55676265a1251ad36f18bac9939206a59e19
+  apriltag commit: 4cdba6a8c6cf4efeb032fa5542da927d4677c035
+
+Output:
+  apriltag.js
+  apriltag_wasm.js
+  apriltag_wasm.wasm
+
+Notes:
+  - Existing ./vendor was not modified.
+  - Detection objects now include "family".
+  - Pairing/UI logic is intentionally not included yet.

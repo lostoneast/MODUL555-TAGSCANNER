@@ -12,8 +12,6 @@ Thumbs.db
 .apriltag-dual-build/
 *.log
 
-# Generated vendor artifacts
-vendor-dual/
 
 # Python cache / local tooling
 __pycache__/
