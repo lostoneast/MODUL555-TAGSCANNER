@@ -1,9 +1,23 @@
 :root {
   color-scheme: light;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #eef1f5;
-  color: #111827;
-  
+  --brand-deep-blue: #004D69;
+  --brand-deep-blue-dark: #003A50;
+  --brand-deep-blue-soft: #0A6389;
+  --brand-sky-blue: #2683C0;
+  --brand-sky-blue-dark: #1F6C9F;
+  --brand-sky-blue-soft: #E8F2F9;
+  --brand-sky-blue-border: #BBD8EC;
+  --brand-white: #FFFFFF;
+  --brand-text: #111827;
+  --brand-bg: #E8F2F9;
+  --brand-surface: #FFFFFF;
+  --brand-surface-alt: #F3F9FD;
+  --brand-border: rgba(0, 77, 105, 0.12);
+  --brand-success: #0A6389;
+  --brand-success-soft: #DFF3FF;
+  background: var(--brand-bg);
+  color: var(--brand-text);
 }
 
 * { box-sizing: border-box; }
@@ -11,10 +25,13 @@
 html, body {
   margin: 0;
   min-height: 100%;
-  background: #eef1f5;
+  background: var(--brand-bg);
 }
 
-body { min-height: 100vh; }
+body {
+  min-height: 100vh;
+  color: var(--brand-text);
+}
 button { font: inherit; }
 
 .app {
@@ -36,7 +53,7 @@ button { font: inherit; }
   font-size: 11px;
   font-weight: 800;
   letter-spacing: .12em;
-  color: #6b7280;
+  color: var(--brand-deep-blue-soft);
 }
 
 h1 {
@@ -54,42 +71,45 @@ h2 {
   flex: 0 0 auto;
   padding: 8px 11px;
   border-radius: 999px;
-  background: #e5e7eb;
-  color: #4b5563;
+  background: var(--brand-sky-blue-soft);
+  color: var(--brand-deep-blue);
   font-size: 12px;
   font-weight: 800;
+  border: 1px solid var(--brand-sky-blue-border);
 }
 
 .system-status.ready {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--brand-success-soft);
+  color: var(--brand-deep-blue);
 }
 
 .system-status.busy {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #EAF5FF;
+  color: var(--brand-sky-blue-dark);
 }
 
 .system-status.error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #FDEAEA;
+  color: #8B1E1E;
 }
 
 .camera-card {
   overflow: hidden;
   border-radius: 20px;
-  background: #080b11;
-  box-shadow: 0 16px 50px rgba(17, 24, 39, .14);
+  background: #081922;
+  box-shadow: 0 16px 50px rgba(0, 77, 105, 0.18);
+  border: 1px solid rgba(38, 131, 192, 0.18);
 }
 
 .camera-view {
   position: relative;
   width: 100%;
+  max-height: 66vh;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 35%, rgba(255,255,255,.08), transparent 40%),
-    #080b11;
+    #081922;
 }
 
 .camera-view video,
@@ -165,10 +185,10 @@ h2 {
 .panel {
   margin-top: 16px;
   padding: 18px;
-  border: 1px solid rgba(17, 24, 39, .06);
+  border: 1px solid var(--brand-sky-blue-border);
   border-radius: 18px;
-  background: #fff;
-  box-shadow: 0 8px 30px rgba(17, 24, 39, .06);
+  background: var(--brand-surface);
+  box-shadow: 0 8px 30px rgba(0, 77, 105, 0.08);
 }
 
 .tag-result,
@@ -182,7 +202,7 @@ h2 {
 
 .panel-caption {
   margin-bottom: 4px;
-  color: #6b7280;
+  color: var(--brand-deep-blue-soft);
   font-size: 12px;
   font-weight: 700;
 }
@@ -191,13 +211,14 @@ h2 {
   font-size: 30px;
   font-weight: 900;
   letter-spacing: -.03em;
+  color: var(--brand-deep-blue-dark);
 }
 
 .detected-badge {
   padding: 7px 10px;
   border-radius: 999px;
-  background: #dcfce7;
-  color: #166534;
+  background: var(--brand-success-soft);
+  color: var(--brand-deep-blue);
   font-size: 12px;
   font-weight: 800;
 }
@@ -214,13 +235,13 @@ h2 {
   gap: 13px;
   width: 100%;
   padding: 14px;
-  border: 2px solid transparent;
+  border: 2px solid var(--brand-sky-blue-border);
   border-radius: 14px;
-  background: #f6f7f9;
-  color: #111827;
+  background: var(--brand-surface-alt);
+  color: var(--brand-text);
   text-align: left;
   cursor: pointer;
-  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease;
 }
 
 .status-button:active { transform: scale(.99); }
@@ -234,7 +255,7 @@ h2 {
 
 .status-button small {
   margin-top: 2px;
-  color: #6b7280;
+  color: var(--brand-deep-blue-soft);
   font-size: 12px;
 }
 
@@ -245,39 +266,43 @@ h2 {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: #e5e7eb;
+  background: var(--brand-sky-blue-soft);
+  color: var(--brand-deep-blue);
   font-size: 22px;
   font-weight: 900;
 }
 
 .status-button.arrived.selected {
-  border-color: #2563eb;
-  background: #eff6ff;
+  border-color: var(--brand-sky-blue);
+  background: #EAF5FF;
+  box-shadow: 0 0 0 3px rgba(38, 131, 192, 0.08);
 }
 
 .status-button.arrived.selected .status-icon {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #D8EEFF;
+  color: var(--brand-sky-blue-dark);
 }
 
 .status-button.installed.selected {
-  border-color: #16a34a;
-  background: #f0fdf4;
+  border-color: var(--brand-deep-blue-soft);
+  background: #EAF8FF;
+  box-shadow: 0 0 0 3px rgba(10, 99, 137, 0.08);
 }
 
 .status-button.installed.selected .status-icon {
-  background: #dcfce7;
-  color: #15803d;
+  background: #D9F0FF;
+  color: var(--brand-deep-blue-soft);
 }
 
 .status-button.defect.selected {
-  border-color: #dc2626;
-  background: #fef2f2;
+  border-color: #9A3A3A;
+  background: #FDF0F0;
+  box-shadow: 0 0 0 3px rgba(154, 58, 58, 0.08);
 }
 
 .status-button.defect.selected .status-icon {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #FDE2E2;
+  color: #9A3A3A;
 }
 
 .primary-button,
@@ -292,19 +317,22 @@ h2 {
 }
 
 .primary-button {
-  background: #111827;
-  color: #fff;
+  background: linear-gradient(135deg, var(--brand-deep-blue), var(--brand-sky-blue));
+  color: var(--brand-white);
+  box-shadow: 0 12px 24px rgba(0, 77, 105, 0.18);
 }
 
 .primary-button:disabled {
   cursor: not-allowed;
-  background: #d1d5db;
-  color: #6b7280;
+  background: #D6E5EE;
+  color: #7091A3;
+  box-shadow: none;
 }
 
 .secondary-button {
-  background: #e5e7eb;
-  color: #111827;
+  background: var(--brand-sky-blue-soft);
+  color: var(--brand-deep-blue);
+  border: 1px solid var(--brand-sky-blue-border);
 }
 
 .success-mark {
@@ -313,8 +341,8 @@ h2 {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--brand-success-soft);
+  color: var(--brand-deep-blue);
   font-size: 22px;
   font-weight: 900;
 }
