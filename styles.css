@@ -282,9 +282,10 @@ h2 { margin: 0; font-size: 19px; }
 }
 
 .rescan-button {
+  display: grid;
+  place-items: center;
   background: #B42323;
   color: #fff;
-  font-size: 13px;
 }
 
 .rescan-button:disabled,
