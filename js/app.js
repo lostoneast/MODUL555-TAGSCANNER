@@ -47,7 +47,7 @@ async function init() {
 
     await camera.start();
 
-    setSystemStatus("Сканирование", "ready");
+    setSystemStatus("Сканирование", "ready", true);
     dom.scanHint.textContent = "Наведите камеру на AprilTag";
 
     scanner.start();
@@ -156,7 +156,7 @@ function restartScanning() {
   dom.submitButton.disabled = true;
 
   dom.scanHint.textContent = "Наведите камеру на AprilTag";
-  setSystemStatus("Сканирование", "ready");
+  setSystemStatus("Сканирование", "ready", true);
 
   scanner.resume();
 }
@@ -171,9 +171,9 @@ function resetPanels() {
   dom.errorPanel.classList.add("hidden");
 }
 
-function setSystemStatus(text, state = "") {
+function setSystemStatus(text, state = "", scanning = false) {
   dom.systemStatus.textContent = text;
-  dom.systemStatus.className = "visually-hidden";
+  dom.systemStatus.className = scanning ? "scanning-indicator" : "visually-hidden";
 
   if (state) {
     dom.systemStatus.classList.add(state);

@@ -39,6 +39,46 @@ button { font: inherit; }
   isolation: isolate;
 }
 
+.scanning-indicator {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 13px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 999px;
+  background: rgba(8, 25, 34, .78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .18);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.scanning-indicator::before {
+  content: "";
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6ee7b7;
+  box-shadow: 0 0 0 4px rgba(110, 231, 183, .12);
+  animation: scanning-pulse 2s ease-in-out infinite;
+}
+
+@keyframes scanning-pulse {
+  50% { box-shadow: 0 0 0 7px rgba(110, 231, 183, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanning-indicator::before { animation: none; }
+}
+
 .camera-card {
   position: absolute;
   inset: 0;
