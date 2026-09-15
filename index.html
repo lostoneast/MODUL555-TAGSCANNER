@@ -20,6 +20,13 @@
 <body>
   <main class="app">
     <div id="systemStatus" class="visually-hidden" role="status">Запуск…</div>
+    <div id="successToast" class="success-toast" role="status" aria-live="polite" aria-atomic="true">
+      <svg class="success-toast-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="11" fill="currentColor" fill-opacity=".16" />
+        <path d="m7 12 3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span id="successToastText"></span>
+    </div>
 
     <div id="startup" class="startup" role="status">
       <span class="startup-spinner" aria-hidden="true"></span>

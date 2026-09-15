@@ -416,3 +416,45 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .startup-spinner { animation: none; }
 }
+
+.success-toast {
+  position: absolute;
+  top: calc(max(16px, env(safe-area-inset-top)) + 52px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 11px 16px;
+  border: 1px solid rgba(110, 231, 183, .3);
+  border-radius: 16px;
+  background: rgba(8, 35, 29, .92);
+  color: #ecfdf5;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
+  font-size: 13px;
+  font-weight: 650;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.success-toast-icon { flex-shrink: 0; color: #6ee7b7; }
+.success-toast.visible { animation: success-toast 1.8s ease both; }
+.success-toast.visible path { animation: success-check .35s ease-out both; }
+
+@keyframes success-toast {
+  0% { opacity: 0; transform: translate(-50%, -6px); }
+  12%, 80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -4px); }
+}
+
+@keyframes success-check {
+  from { stroke-dasharray: 20; stroke-dashoffset: 20; }
+  to { stroke-dasharray: 20; stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-toast.visible { animation: none; opacity: 1; }
+  .success-toast.visible path { animation: none; }
+}

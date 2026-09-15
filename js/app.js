@@ -4,6 +4,8 @@ import { sendTagStatus } from "./api.js";
 import { initializeLocationPermission } from "./location-prompt.js";
 
 const dom = {
+  successToast: document.getElementById("successToast"),
+  successToastText: document.getElementById("successToastText"),
   startup: document.getElementById("startup"),
   startupText: document.getElementById("startupText"),
   video: document.getElementById("video"),
@@ -26,6 +28,7 @@ let scannerInitialized = false;
 let submitting = false;
 let includeLocation = false;
 let locationPermissionTask = null;
+let successToastTimer = null;
 
 const camera = new CameraController(dom.video);
 
@@ -136,6 +139,7 @@ dom.submitButton.addEventListener("click", async () => {
     await sendTagStatus(currentPair, selectedStatus, { includeLocation });
 
     restartScanning();
+    showSuccessToast();
   } catch (error) {
     console.error(error);
     alert(`Не удалось передать статус: ${error.message}`);
@@ -147,6 +151,20 @@ dom.submitButton.addEventListener("click", async () => {
     dom.submitButton.textContent = "Подтвердить статус";
   }
 });
+
+function showSuccessToast() {
+  window.clearTimeout(successToastTimer);
+  dom.successToast.classList.remove("visible");
+  // Перезапускаем анимацию, если следующий статус подтверждён очень быстро.
+  void dom.successToast.offsetWidth;
+  dom.successToastText.textContent = "Статус подтверждён";
+  dom.successToast.classList.add("visible");
+  successToastTimer = window.setTimeout(() => {
+    dom.successToast.classList.remove("visible");
+    dom.successToastText.textContent = "";
+    successToastTimer = null;
+  }, 1800);
+}
 
 dom.rescanButton.addEventListener("click", () => {
   if (!submitting) restartScanning();
