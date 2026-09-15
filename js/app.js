@@ -1,7 +1,7 @@
 import { CameraController } from "./camera.js";
 import { AprilTagScanner } from "./scanner.js";
 import { sendTagStatus } from "./api.js";
-import { askLocationPermission } from "./location-prompt.js";
+import { initializeLocationPermission } from "./location-prompt.js";
 
 const dom = {
   video: document.getElementById("video"),
@@ -22,6 +22,8 @@ let currentPair = null;
 let selectedStatus = null;
 let scannerInitialized = false;
 let submitting = false;
+let includeLocation = false;
+let locationPermissionTask = null;
 
 const camera = new CameraController(dom.video);
 
@@ -37,6 +39,9 @@ async function init() {
   dom.scanHint.textContent = "Загрузка AprilTag WASM…";
 
   try {
+    locationPermissionTask ??= initializeLocationPermission();
+    includeLocation = await locationPermissionTask;
+
     if (!scannerInitialized) {
       await scanner.init();
       scannerInitialized = true;
@@ -118,11 +123,6 @@ dom.submitButton.addEventListener("click", async () => {
   dom.submitButton.textContent = "Обработка…";
 
   try {
-    const includeLocation = await askLocationPermission();
-    if (includeLocation === null) {
-      dom.submitButton.disabled = false;
-      return;
-    }
     await sendTagStatus(currentPair, selectedStatus, { includeLocation });
 
     restartScanning();

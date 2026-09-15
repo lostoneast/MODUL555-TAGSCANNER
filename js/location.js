@@ -1,4 +1,4 @@
-// Запрашиваем координаты только при подтверждении статуса.
+// Получаем координаты при выдаче разрешения и перед отправкой статуса.
 export function getCurrentLocation() {
   return new Promise((resolve) => {
     if (!globalThis.navigator?.geolocation) {
