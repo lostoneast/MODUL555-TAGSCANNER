@@ -80,6 +80,15 @@
     </section>
   </main>
 
+  <dialog id="locationDialog" class="location-dialog" aria-labelledby="locationTitle" aria-describedby="locationDescription">
+    <form method="dialog">
+      <h2 id="locationTitle">Добавить местоположение?</h2>
+      <p id="locationDescription">Координаты будут переданы вместе со статусом изделия, чтобы зафиксировать место сканирования.</p>
+      <button class="primary-button" value="allow" type="submit">Разрешить геолокацию</button>
+      <button class="secondary-button" value="skip" type="submit" autofocus>Продолжить без координат</button>
+    </form>
+  </dialog>
+
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { CameraController } from "./camera.js";
 import { AprilTagScanner } from "./scanner.js";
 import { sendTagStatus } from "./api.js";
+import { askLocationPermission } from "./location-prompt.js";
 
 const dom = {
   video: document.getElementById("video"),
@@ -117,7 +118,12 @@ dom.submitButton.addEventListener("click", async () => {
   dom.submitButton.textContent = "Обработка…";
 
   try {
-    await sendTagStatus(currentPair, selectedStatus);
+    const includeLocation = await askLocationPermission();
+    if (includeLocation === null) {
+      dom.submitButton.disabled = false;
+      return;
+    }
+    await sendTagStatus(currentPair, selectedStatus, { includeLocation });
 
     restartScanning();
   } catch (error) {

@@ -359,3 +359,26 @@ button:focus-visible {
   .status-icon { display: none; }
   .scan-actions { margin-top: 10px; }
 }
+
+.location-dialog {
+  width: min(420px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid var(--brand-sky-blue-border);
+  border-radius: 22px;
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
+}
+
+.location-dialog::backdrop {
+  background: rgba(3, 15, 23, .65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.location-dialog h2 { color: var(--brand-deep-blue); }
+.location-dialog p { margin: 12px 0 8px; font-size: 14px; line-height: 1.6; }
+.location-dialog button { padding: 12px; }
+.location-dialog button:focus-visible { outline: 3px solid var(--brand-sky-blue); outline-offset: 3px; }

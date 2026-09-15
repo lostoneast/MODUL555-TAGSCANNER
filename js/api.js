@@ -1,4 +1,5 @@
 import { APP_CONFIG, STATUS_LABELS } from "./config.js";
+import { getCurrentLocation } from "./location.js";
 
 export function createTagEventPayload(pair, status) {
   const objectTagId = Number(pair?.objectTagId);
@@ -21,13 +22,15 @@ export function createTagEventPayload(pair, status) {
     itemTagId,
     status,
     timestamp: new Date().toISOString(),
-    source: APP_CONFIG.source
+    source: APP_CONFIG.source,
+    location: null
   };
 }
 
 // Вся подготовка и отправка запроса находятся здесь; адрес — в config.js.
-export async function sendTagStatus(pair, status) {
+export async function sendTagStatus(pair, status, { includeLocation = true } = {}) {
   const payload = createTagEventPayload(pair, status);
+  payload.location = includeLocation ? await getCurrentLocation() : null;
   const endpoint = APP_CONFIG.apiEndpoint.trim();
   const request = {
     method: "POST",
