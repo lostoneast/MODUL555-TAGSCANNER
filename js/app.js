@@ -6,17 +6,13 @@ import { STATUS_LABELS } from "./config.js";
 const dom = {
   video: document.getElementById("video"),
   overlay: document.getElementById("overlay"),
-  cameraView: document.getElementById("cameraView"),
   systemStatus: document.getElementById("systemStatus"),
   scanHint: document.getElementById("scanHint"),
   tagPanel: document.getElementById("tagPanel"),
-  tagId: document.getElementById("tagId"),
   statusButtons: [...document.querySelectorAll(".status-button")],
   submitButton: document.getElementById("submitButton"),
 
-  jsonPanel: document.getElementById("jsonPanel"),
-  jsonOutput: document.getElementById("jsonOutput"),
-  scanAgainButton: document.getElementById("scanAgainButton"),
+  rescanButton: document.getElementById("rescanButton"),
   errorPanel: document.getElementById("errorPanel"),
   errorText: document.getElementById("errorText"),
   retryButton: document.getElementById("retryButton")
@@ -25,6 +21,7 @@ const dom = {
 let currentPair = null;
 let selectedStatus = null;
 let scannerInitialized = false;
+let submitting = false;
 
 const camera = new CameraController(dom.video);
 
@@ -48,10 +45,7 @@ async function init() {
     setSystemStatus("Камера…", "busy");
     dom.scanHint.textContent = "Запрос доступа к камере…";
 
-    const cameraInfo = await camera.start();
-
-    dom.cameraView.style.aspectRatio =
-      `${cameraInfo.width} / ${cameraInfo.height}`;
+    await camera.start();
 
     setSystemStatus("Сканирование", "ready");
     dom.scanHint.textContent = "Наведите камеру на AprilTag";
@@ -80,10 +74,7 @@ function handleTagDetected(pair) {
 
   selectedStatus = null;
 
-  // Сохраняем прежний UI: показываем ID изделия.
-  dom.tagId.textContent = String(currentPair.itemTagId);
   dom.tagPanel.classList.remove("hidden");
-  dom.jsonPanel.classList.add("hidden");
   dom.errorPanel.classList.add("hidden");
 
   clearStatusSelection();
@@ -107,6 +98,7 @@ function clearStatusSelection() {
 
 for (const button of dom.statusButtons) {
   button.addEventListener("click", () => {
+    if (submitting) return;
     clearStatusSelection();
 
     button.classList.add("selected");
@@ -116,7 +108,11 @@ for (const button of dom.statusButtons) {
 }
 
 dom.submitButton.addEventListener("click", async () => {
-  if (currentPair === null || !selectedStatus) return;
+  if (submitting || currentPair === null || !selectedStatus) return;
+
+  submitting = true;
+  dom.rescanButton.disabled = true;
+  for (const button of dom.statusButtons) button.disabled = true;
 
   dom.submitButton.disabled = true;
   dom.submitButton.textContent = "Формирование запроса…";
@@ -131,28 +127,29 @@ dom.submitButton.addEventListener("click", async () => {
       statusLabel: STATUS_LABELS[selectedStatus]
     };
 
-    dom.jsonOutput.textContent = JSON.stringify(displayData, null, 2);
+    console.info("Запрос передачи статуса:", JSON.stringify(displayData, null, 2));
 
-    dom.tagPanel.classList.add("hidden");
-    dom.jsonPanel.classList.remove("hidden");
-
-    dom.scanHint.textContent = "Статус зафиксирован";
-    setSystemStatus("Готово", "ready");
+    restartScanning();
   } catch (error) {
     console.error(error);
     alert(`Ошибка формирования запроса: ${error.message}`);
     dom.submitButton.disabled = false;
   } finally {
+    submitting = false;
+    dom.rescanButton.disabled = false;
+    for (const button of dom.statusButtons) button.disabled = false;
     dom.submitButton.textContent = "Подтвердить статус";
   }
 });
 
-dom.scanAgainButton.addEventListener("click", () => {
+dom.rescanButton.addEventListener("click", () => {
+  if (!submitting) restartScanning();
+});
+
+function restartScanning() {
   currentPair = null;
   selectedStatus = null;
 
-  dom.jsonOutput.textContent = "";
-  dom.jsonPanel.classList.add("hidden");
   dom.tagPanel.classList.add("hidden");
 
   clearStatusSelection();
@@ -162,7 +159,7 @@ dom.scanAgainButton.addEventListener("click", () => {
   setSystemStatus("Сканирование", "ready");
 
   scanner.resume();
-});
+}
 
 dom.retryButton.addEventListener("click", async () => {
   dom.errorPanel.classList.add("hidden");
@@ -171,13 +168,12 @@ dom.retryButton.addEventListener("click", async () => {
 
 function resetPanels() {
   dom.tagPanel.classList.add("hidden");
-  dom.jsonPanel.classList.add("hidden");
   dom.errorPanel.classList.add("hidden");
 }
 
 function setSystemStatus(text, state = "") {
   dom.systemStatus.textContent = text;
-  dom.systemStatus.className = "system-status";
+  dom.systemStatus.className = "visually-hidden";
 
   if (state) {
     dom.systemStatus.classList.add(state);

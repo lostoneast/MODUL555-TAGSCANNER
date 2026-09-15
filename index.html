@@ -10,12 +10,7 @@
 </head>
 <body>
   <main class="app">
-    <header class="app-header">
-      <div>
-        <div class="eyebrow">Сканер изделий</div>
-      </div>
-      <div id="systemStatus" class="system-status">Запуск…</div>
-    </header>
+    <div id="systemStatus" class="visually-hidden" role="status">Запуск…</div>
 
     <section class="camera-card">
       <div id="cameraView" class="camera-view">
@@ -26,21 +21,11 @@
           <span></span><span></span><span></span><span></span>
         </div>
 
-        <div id="scanHint" class="scan-hint">Подготовка камеры…</div>
+        <div id="scanHint" class="visually-hidden">Подготовка камеры…</div>
       </div>
     </section>
 
-    <section id="tagPanel" class="panel hidden">
-      <div class="tag-result">
-        <div>
-          <div class="panel-caption">Обнаружена метка</div>
-          <div class="tag-id">ID <span id="tagId">—</span></div>
-        </div>
-        <div class="detected-badge">Найдена</div>
-      </div>
-
-      <h2>Статус изделия</h2>
-
+    <section id="tagPanel" class="panel hidden" aria-label="Статус изделия">
       <div class="status-grid">
         <button class="status-button arrived" data-status="ARRIVED_ON_SITE" type="button">
           <span class="status-icon">↓</span>
@@ -67,25 +52,14 @@
         </button>
       </div>
 
-      <button id="submitButton" class="primary-button" type="button" disabled>
-        Подтвердить статус
-      </button>
-    </section>
-
-    <section id="jsonPanel" class="panel hidden">
-      <div class="success-row">
-        <div>
-          <div class="panel-caption">Mock-запрос сформирован</div>
-          <h2>Данные готовы к отправке</h2>
-        </div>
-        <div class="success-mark">✓</div>
+      <div class="scan-actions">
+        <button id="submitButton" class="primary-button" type="button" disabled>
+          Подтвердить статус
+        </button>
+        <button id="rescanButton" class="rescan-button" type="button" aria-label="Пересканировать без отправки данных">
+          Пересканировать
+        </button>
       </div>
-
-      <pre id="jsonOutput" class="json-output"></pre>
-
-      <button id="scanAgainButton" class="secondary-button" type="button">
-        Сканировать следующее изделие
-      </button>
     </section>
 
     <section id="errorPanel" class="panel error-panel hidden">
