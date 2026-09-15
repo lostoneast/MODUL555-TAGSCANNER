@@ -382,3 +382,37 @@ button:focus-visible {
 .location-dialog p { margin: 12px 0 8px; font-size: 14px; line-height: 1.6; }
 .location-dialog button { padding: 12px; }
 .location-dialog button:focus-visible { outline: 3px solid var(--brand-sky-blue); outline-offset: 3px; }
+
+.startup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  border-radius: 18px;
+  background: rgba(8, 25, 34, .85);
+  color: #fff;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.startup-spinner {
+  flex: 0 0 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, .25);
+  border-top-color: #6ee7b7;
+  border-radius: 50%;
+  animation: startup-spin 1s linear infinite;
+}
+
+@keyframes startup-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .startup-spinner { animation: none; }
+}

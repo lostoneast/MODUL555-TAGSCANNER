@@ -1,4 +1,4 @@
-import * as Comlink from 'https://unpkg.com/comlink/dist/esm/comlink.mjs';
+let Comlink;
 import { APP_CONFIG } from './config.js';
 
 const OBJECT_FAMILY = 'tag36h11';
@@ -25,7 +25,7 @@ export class AprilTagScanner {
   }
 
   async init() {
-    const Comlink = await import(
+    Comlink = await import(
       'https://unpkg.com/comlink/dist/esm/comlink.mjs'
     );
 

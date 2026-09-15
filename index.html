@@ -21,6 +21,11 @@
   <main class="app">
     <div id="systemStatus" class="visually-hidden" role="status">Запуск…</div>
 
+    <div id="startup" class="startup" role="status">
+      <span class="startup-spinner" aria-hidden="true"></span>
+      <span id="startupText">Подготовка камеры…</span>
+    </div>
+
     <section class="camera-card">
       <div id="cameraView" class="camera-view">
         <video id="video" autoplay muted playsinline></video>

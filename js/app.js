@@ -4,6 +4,8 @@ import { sendTagStatus } from "./api.js";
 import { initializeLocationPermission } from "./location-prompt.js";
 
 const dom = {
+  startup: document.getElementById("startup"),
+  startupText: document.getElementById("startupText"),
   video: document.getElementById("video"),
   overlay: document.getElementById("overlay"),
   systemStatus: document.getElementById("systemStatus"),
@@ -35,22 +37,28 @@ const scanner = new AprilTagScanner(
 
 async function init() {
   resetPanels();
-  setSystemStatus("Детектор…", "busy");
-  dom.scanHint.textContent = "Загрузка AprilTag WASM…";
+  dom.startup.classList.remove("hidden");
+  dom.startupText.textContent = "Подготовка камеры…";
+  setSystemStatus("Запуск…", "busy");
 
   try {
+    // Видео не ждёт загрузки WASM или определения координат.
+    const cameraTask = camera.start().then(() => {
+      dom.startupText.textContent = "Подготовка сканера…";
+    });
+    const detectorTask = scannerInitialized ? Promise.resolve() :
+      scanner.init().then(() => { scannerInitialized = true; });
     locationPermissionTask ??= initializeLocationPermission();
-    includeLocation = await locationPermissionTask;
 
-    if (!scannerInitialized) {
-      await scanner.init();
-      scannerInitialized = true;
-    }
-
-    setSystemStatus("Камера…", "busy");
-    dom.scanHint.textContent = "Запрос доступа к камере…";
-
-    await camera.start();
+    // Дожидаемся завершения задач перед очисткой при ошибке:
+    // поздний запуск камеры не должен оставлять активный поток.
+    const results = await Promise.allSettled([
+      cameraTask, detectorTask, locationPermissionTask
+    ]);
+    const failed = results.find((result) => result.status === "rejected");
+    if (failed) throw failed.reason;
+    includeLocation = results[2].value;
+    dom.startup.classList.add("hidden");
 
     setSystemStatus("Сканирование", "ready", true);
     dom.scanHint.textContent = "Наведите камеру на AprilTag";
@@ -58,6 +66,8 @@ async function init() {
     scanner.start();
   } catch (error) {
     console.error(error);
+    dom.startup.classList.add("hidden");
+    if (!scannerInitialized) scanner.destroy();
     scanner.stop();
     camera.stop();
 
