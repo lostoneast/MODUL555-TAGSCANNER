@@ -25,41 +25,42 @@ export function createTagEventPayload(pair, status) {
   };
 }
 
+// Вся подготовка и отправка запроса находятся здесь; адрес — в config.js.
 export async function sendTagStatus(pair, status) {
   const payload = createTagEventPayload(pair, status);
-
-  const mockRequest = {
+  const endpoint = APP_CONFIG.apiEndpoint.trim();
+  const request = {
     method: "POST",
-    url: APP_CONFIG.apiEndpoint,
-    headers: {
-      "Content-Type": "application/json"
-    },
+    url: endpoint,
+    headers: { "Content-Type": "application/json" },
     body: payload
   };
 
-  console.group("Mock API request");
-  console.log(mockRequest.method, mockRequest.url);
-  console.log(JSON.stringify(mockRequest.body, null, 2));
-  console.groupEnd();
+  console.info(
+    endpoint ? "Запрос передачи статуса:" : "Отладка: запрос не отправляется (endpoint не указан).",
+    JSON.stringify({
+      endpoint,
+      method: request.method,
+      payload,
+      statusLabel: STATUS_LABELS[status]
+    }, null, 2)
+  );
 
-  await new Promise((resolve) => setTimeout(resolve, 180));
+  if (!endpoint) {
+    await new Promise((resolve) => setTimeout(resolve, 180));
+    return { ok: true, mock: true, request };
+  }
 
-  return {
-    ok: true,
-    mock: true,
-    request: mockRequest
-  };
+  const response = await fetch(endpoint, {
+    method: request.method,
+    headers: request.headers,
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Сервер вернул ошибку HTTP ${response.status}.`);
+  }
+
+  // Не требуем JSON в ответе: поддерживаем также пустой ответ (204).
+  return { ok: true, mock: false, request, status: response.status };
 }
-
-/*
-Когда backend будет готов:
-
-const response = await fetch(APP_CONFIG.apiEndpoint, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload)
-});
-
-if (!response.ok) throw new Error(`HTTP ${response.status}`);
-return await response.json();
-*/

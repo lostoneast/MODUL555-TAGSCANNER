@@ -1,7 +1,6 @@
 import { CameraController } from "./camera.js";
 import { AprilTagScanner } from "./scanner.js";
 import { sendTagStatus } from "./api.js";
-import { STATUS_LABELS } from "./config.js";
 
 const dom = {
   video: document.getElementById("video"),
@@ -115,24 +114,15 @@ dom.submitButton.addEventListener("click", async () => {
   for (const button of dom.statusButtons) button.disabled = true;
 
   dom.submitButton.disabled = true;
-  dom.submitButton.textContent = "Формирование запроса…";
+  dom.submitButton.textContent = "Обработка…";
 
   try {
-    const result = await sendTagStatus(currentPair, selectedStatus);
-
-    const displayData = {
-      endpoint: result.request.url,
-      method: result.request.method,
-      payload: result.request.body,
-      statusLabel: STATUS_LABELS[selectedStatus]
-    };
-
-    console.info("Запрос передачи статуса:", JSON.stringify(displayData, null, 2));
+    await sendTagStatus(currentPair, selectedStatus);
 
     restartScanning();
   } catch (error) {
     console.error(error);
-    alert(`Ошибка формирования запроса: ${error.message}`);
+    alert(`Не удалось передать статус: ${error.message}`);
     dom.submitButton.disabled = false;
   } finally {
     submitting = false;

@@ -1,5 +1,7 @@
 export const APP_CONFIG = Object.freeze({
-  apiEndpoint: "/api/tag-events",
+  // Вставьте адрес API (например, "/api/tag-events" или полный HTTPS URL).
+  // Пустая строка — режим отладки: JSON только в консоли, без отправки.
+  apiEndpoint: "",
   processingWidth: 640,
   scanIntervalMs: 150,
   duplicateCooldownMs: 2000,
